@@ -61,6 +61,7 @@ jobs:
 
     - name: Load custom config
       run: |
+        [ -e files ] && mv files openwrt/files
         [ -e $CONFIG_FILE ] && mv $CONFIG_FILE openwrt/.config
         chmod +x $SELF_AFTER_SH
         cd openwrt
