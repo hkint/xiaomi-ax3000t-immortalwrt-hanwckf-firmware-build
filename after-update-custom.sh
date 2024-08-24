@@ -8,6 +8,3 @@ sed -i 's/192.168.1.1/192.168.31.1/g' package/base-files/files/bin/config_genera
 sed -i 's/option ssid.*/option ssid \'Wi-Fi\'/g' package/kernel/mac80211/files/lib/wifi/mac80211.sh
 
 sed -i 's/option disabled.*/option disabled \'0\'/g' package/kernel/mac80211/files/lib/wifi/mac80211.sh
-
-sed -i 's/option start.*/option start \'2\'/g' package/network/services/dnsmasq/files/dhcp.conf
-sed -i 's/option limit.*/option limit \'100\'/g' package/network/services/dnsmasq/files/dhcp.conf
