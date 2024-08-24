@@ -18,6 +18,21 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    - name: Free disk space (Ubuntu)
+      uses: jlumbroso/free-disk-space@main
+      with:
+        # this might remove tools that are actually needed,
+        # if set to "true" but frees about 6 GB
+        tool-cache: true
+        
+        # all of these default to true, but feel free to set to
+        # "false" if necessary for your workflow
+        android: true
+        dotnet: true
+        haskell: true
+        large-packages: true
+        swap-storage: true
+
     - name: Checkout
       uses: actions/checkout@main
 
@@ -93,7 +108,7 @@ jobs:
 
     - name: Upload bin directory
       uses: actions/upload-artifact@main
-      if: steps.compile.outputs.status == 'success'
+      if: steps.compile.outputs.status == 'success' && !cancelled
       with:
         name: ImmortalWrt_bin${{ env.DEVICE_NAME }}${{ env.FILE_DATE }}
         path: openwrt/bin
@@ -116,7 +131,7 @@ jobs:
 
     - name: Generate release tag
       id: tag
-      if: (!cancelled())
+      if: steps.compile.outputs.status == 'success' && !cancelled
       run: |
         echo "release_tag=$(date +"%Y.%m.%d-%H%M")" >> $GITHUB_OUTPUT
         touch release.txt
@@ -142,7 +157,7 @@ jobs:
     - name: Cache Compile
       id: cache-compile
       uses: actions/cache/save@v4
-      if: steps.compile.outputs.status == 'success'
+      if: steps.compile.outputs.status == 'success' && !cancelled
       with:
         path: openwrt
         key: ${{ runner.os }}-openwrt-${{ hashFiles('openwrt/feeds.conf.default') }}
