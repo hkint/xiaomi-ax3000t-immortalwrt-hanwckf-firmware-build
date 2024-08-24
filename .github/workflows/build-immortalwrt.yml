@@ -12,13 +12,15 @@ env:
   TZ: Asia/Shanghai
   FEEDS_CONF: feeds.conf.default
 
+permissions:
+  contents: read
+  packages: write
+  id-token: write
+
 jobs:
   build:
     name: build-firmware
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
 
     steps:
     - name: Free disk space (Ubuntu)
@@ -144,8 +146,6 @@ jobs:
     - name: Upload firmware to release
       uses: softprops/action-gh-release@v2
       if: steps.tag.outputs.status == 'success' && !cancelled()
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         tag_name: ${{ steps.tag.outputs.release_tag }}
         body_path: release.txt
