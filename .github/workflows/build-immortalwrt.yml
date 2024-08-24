@@ -171,7 +171,7 @@ jobs:
         keep_minimum_runs: 3
 
     - name: Remove old Releases
-      uses: dev-drprasad/delete-older-releases@v0.3.2
+      uses: dev-drprasad/delete-older-releases@v0.3.4
       if: (!cancelled())
       with:
         keep_latest: 3
