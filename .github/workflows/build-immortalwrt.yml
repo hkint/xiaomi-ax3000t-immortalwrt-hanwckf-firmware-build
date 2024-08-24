@@ -108,7 +108,7 @@ jobs:
 
     - name: Upload bin directory
       uses: actions/upload-artifact@main
-      if: steps.compile.outputs.status == 'success' && !cancelled
+      if: steps.compile.outputs.status == 'success' && !cancelled()
       with:
         name: ImmortalWrt_bin${{ env.DEVICE_NAME }}${{ env.FILE_DATE }}
         path: openwrt/bin
@@ -131,7 +131,7 @@ jobs:
 
     - name: Generate release tag
       id: tag
-      if: steps.compile.outputs.status == 'success' && !cancelled
+      if: steps.compile.outputs.status == 'success' && !cancelled()
       run: |
         echo "release_tag=$(date +"%Y.%m.%d-%H%M")" >> $GITHUB_OUTPUT
         touch release.txt
@@ -157,7 +157,7 @@ jobs:
     - name: Cache Compile
       id: cache-compile
       uses: actions/cache/save@v4
-      if: steps.compile.outputs.status == 'success' && !cancelled
+      if: steps.compile.outputs.status == 'success' && !cancelled()
       with:
         path: openwrt
         key: ${{ runner.os }}-openwrt-${{ hashFiles('openwrt/feeds.conf.default') }}
