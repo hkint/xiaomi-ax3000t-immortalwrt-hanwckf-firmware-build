@@ -1,0 +1,116 @@
+name: Build U-Boot (hanwckf)
+
+on:
+  schedule:  
+    - cron: "0 2 15 * *"
+
+  workflow_dispatch:
+
+env:
+  REPO_URL: https://github.com/hanwckf/immortalwrt-mt798x.git
+  REPO_BRANCH: master
+  DEVICE_NAME: xiaomi-ax3000t
+  TZ: Asia/Shanghai
+
+jobs:
+  build:
+    name: Build U-Boot
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+
+      - name: Free disk space (Ubuntu)
+        uses: jlumbroso/free-disk-space@main
+        with:
+          # this might remove tools that are actually needed,
+          # if set to "true" but frees about 6 GB
+          tool-cache: false
+          
+          # all of these default to true, but feel free to set to
+          # "false" if necessary for your workflow
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          swap-storage: false
+
+      - name: Checkout
+        uses: actions/checkout@main
+
+      - name: Initialization environment
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+
+          sudo -E apt-get -qq install gcc-aarch64-linux-gnu build-essential flex bison libssl-dev device-tree-compiler
+
+          sudo -E apt-get -qq autoremove --purge
+          sudo -E apt-get -qq clean
+
+          sudo timedatectl set-timezone "$TZ"
+          
+          sudo mkdir -p /srcdir
+          sudo chown $USER:$GROUPS /srcdir
+
+      - name: Clone Source Repository
+        working-directory: /srcdir
+        run: |
+           echo "Free space:"
+            df -hT $PWD
+            git clone $REPO_URL -b $REPO_BRANCH u-boot
+            ln -sf /srcdir/u-boot $GITHUB_WORKSPACE/u-boot      
+
+      - name: Compile U-Boot Cycle
+        id: compile
+        run: |
+          cd u-boot && SOC=mt7981 BOARD=ax3000t MULTI_LAYOUT=1 FIXED_MTDPARTS=1 ./build.sh
+
+          echo "FILE_DATE=_$(date +"%Y%m%d%H%M")" >> $GITHUB_ENV
+          echo "status=success" >> $GITHUB_OUTPUT
+
+      - name: Upload bin directory
+        uses: actions/upload-artifact@main
+        if: steps.compile.outputs.status == 'success' && !cancelled()
+        with:
+          name: u-boot_bin_${{ env.DEVICE_NAME }}${{ env.FILE_DATE }}
+          path: u-boot/output
+
+      - name: Generate release tag
+        id: tag
+        if: steps.compile.outputs.status == 'success' && !cancelled()
+        run: |
+          echo "release_tag=$(date +"%Y.%m.%d-%H%M")" >> $GITHUB_OUTPUT
+          touch release.txt
+          echo "🌝 xiaomi ax3000t" >> release.txt
+          echo "status=success" >> $GITHUB_OUTPUT
+
+      - name: Upload firmware to release
+        id: release
+        uses: softprops/action-gh-release@v2
+        if: steps.tag.outputs.status == 'success' && !cancelled()
+        with:
+          tag_name: ${{ steps.tag.outputs.release_tag }}
+          body_path: release.txt
+          files: u-boot/output/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        
+      - name: Delete workflow runs
+        uses: Mattraks/delete-workflow-runs@v2
+        with:
+          token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          retain_days: 7
+          keep_minimum_runs: 3
+
+      - name: Remove old Releases
+        uses: dev-drprasad/delete-older-releases@v0.3.4
+        if: steps.release.outputs.status == 'success' && !cancelled()
+        with:
+          keep_latest: 3
+          delete_tags: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
