@@ -1,4 +1,4 @@
-name: Build U-Boot (hanwckf)
+name: Build U-Boot
 
 on:
   schedule:  
@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 env:
-  REPO_URL: https://github.com/hanwckf/immortalwrt-mt798x.git
+  REPO_URL: https://github.com/hanwckf/bl-mt798x.git
   REPO_BRANCH: master
   DEVICE_NAME: xiaomi-ax3000t
   TZ: Asia/Shanghai
