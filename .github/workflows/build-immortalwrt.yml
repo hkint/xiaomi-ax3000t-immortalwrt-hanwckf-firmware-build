@@ -1,7 +1,10 @@
 name: Build ImmortalWrt Firmware
-
 on:
   workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
 
 env:
   REPO_URL: https://github.com/hanwckf/immortalwrt-mt798x.git
@@ -16,11 +19,10 @@ jobs:
   build:
     name: build-firmware
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-      id-token: write
 
+    permissions:
+      contents: write
+    
     steps:
     - name: Free disk space (Ubuntu)
       uses: jlumbroso/free-disk-space@main
@@ -106,7 +108,7 @@ jobs:
         # Need Modify https://docs.github.com/zh/actions/writing-workflows/choosing-what-your-workflow-does/workflow-commands-for-github-actions#multiline-strings
         # grep '^CONFIG_TARGET_DEVICE.*DEVICE.*=y' .config | sed -r 's/.*DEVICE_(.*)=y/\1/' > DEVICE_NAME
         # [ -s DEVICE_NAME ] && echo "DEVICE_NAME=_$(cat DEVICE_NAME)" >> $GITHUB_ENV
-        echo "DEVICE_NAME=_xiaomi-ax3000t"
+        echo "DEVICE_NAME=_xiaomi-ax3000t" >>$GITHUB_ENV
         echo "FILE_DATE=_$(date +"%Y%m%d%H%M")" >> $GITHUB_ENV
 
     - name: Check space usage
@@ -142,17 +144,19 @@ jobs:
       run: |
         echo "release_tag=$(date +"%Y.%m.%d-%H%M")" >> $GITHUB_OUTPUT
         touch release.txt
-        echo "🌝 hanwckf-immortalwrt-mt7981-ax3000" >> release.txt
+        echo "🌝 xiaomi ax3000t" >> release.txt
         echo "status=success" >> $GITHUB_OUTPUT
 
     - name: Upload firmware to release
+      id: release
       uses: softprops/action-gh-release@v2
       if: steps.tag.outputs.status == 'success' && !cancelled()
       with:
         tag_name: ${{ steps.tag.outputs.release_tag }}
         body_path: release.txt
         files: ${{ env.FIRMWARE }}/*
-        token: ${{ github.token }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Clean Compile
       id: clean-compile
@@ -178,7 +182,7 @@ jobs:
 
     - name: Remove old Releases
       uses: dev-drprasad/delete-older-releases@v0.3.4
-      if: (!cancelled())
+      if: steps.release.outputs.status == 'success' && !cancelled()
       with:
         keep_latest: 3
         delete_tags: true
