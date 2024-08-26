@@ -4,9 +4,6 @@ on:
     - cron: "0 0 * * 5"
   workflow_dispatch:
 
-permissions:
-  contents: read
-  packages: write
 
 env:
   REPO_URL: https://github.com/hanwckf/immortalwrt-mt798x.git
@@ -24,6 +21,7 @@ jobs:
 
     permissions:
       contents: write
+      actions: write
     
     steps:
     - name: Free disk space (Ubuntu)
