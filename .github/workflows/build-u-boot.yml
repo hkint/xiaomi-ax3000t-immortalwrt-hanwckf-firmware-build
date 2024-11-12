@@ -64,10 +64,10 @@ jobs:
             git clone $REPO_URL -b $REPO_BRANCH u-boot
             ln -sf /srcdir/u-boot $GITHUB_WORKSPACE/u-boot      
 
-      - name: Compile U-Boot Cycle
+      - name: Compile U-Boot
         id: compile
         run: |
-          cd u-boot && SOC=mt7981 BOARD=ax3000t MULTI_LAYOUT=1 FIXED_MTDPARTS=1 ./build.sh
+          cd u-boot && SOC=mt7981 BOARD=ax3000t MULTI_LAYOUT=1 FIXED_MTDPARTS=1 ./build.sh && SOC=mt7981 BOARD=ax3000t-an8855 MULTI_LAYOUT=1 FIXED_MTDPARTS=1 ./build.sh 
 
           echo "FILE_DATE=_$(date +"%Y%m%d%H%M")" >> $GITHUB_ENV
           echo "status=success" >> $GITHUB_OUTPUT
@@ -99,19 +99,19 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         
-      - name: Delete workflow runs
-        uses: Mattraks/delete-workflow-runs@v2
-        with:
-          token: ${{ github.token }}
-          repository: ${{ github.repository }}
-          retain_days: 7
-          keep_minimum_runs: 3
+      # - name: Delete workflow runs
+      #   uses: Mattraks/delete-workflow-runs@v2
+      #   with:
+      #     token: ${{ github.token }}
+      #     repository: ${{ github.repository }}
+      #     retain_days: 7
+      #     keep_minimum_runs: 3
 
-      - name: Remove old Releases
-        uses: dev-drprasad/delete-older-releases@v0.3.4
-        if: steps.release.outputs.status == 'success' && !cancelled()
-        with:
-          keep_latest: 3
-          delete_tags: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # - name: Remove old Releases
+      #   uses: dev-drprasad/delete-older-releases@v0.3.4
+      #   if: steps.release.outputs.status == 'success' && !cancelled()
+      #   with:
+      #     keep_latest: 3
+      #     delete_tags: true
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
