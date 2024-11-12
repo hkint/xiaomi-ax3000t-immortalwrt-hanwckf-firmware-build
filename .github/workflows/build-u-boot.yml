@@ -21,6 +21,10 @@ jobs:
       contents: write
       actions: write
 
+    strategy:
+      matrix:
+        board: [ax3000t, ax3000t_an8855] 
+
     steps:
 
       - name: Free disk space (Ubuntu)
@@ -67,8 +71,9 @@ jobs:
       - name: Compile U-Boot
         id: compile
         run: |
-          cd u-boot && SOC=mt7981 BOARD=ax3000t MULTI_LAYOUT=1 FIXED_MTDPARTS=1 ./build.sh && SOC=mt7981 BOARD=ax3000t-an8855 MULTI_LAYOUT=1 FIXED_MTDPARTS=1 ./build.sh 
-
+          cd u-boot
+          SOC=mt7981 BOARD=${{ matrix.board }} MULTI_LAYOUT=1 FIXED_MTDPARTS=1 ./build.sh
+          
           echo "FILE_DATE=_$(date +"%Y%m%d%H%M")" >> $GITHUB_ENV
           echo "status=success" >> $GITHUB_OUTPUT
 
