@@ -9,7 +9,6 @@ on:
 env:
   REPO_URL: https://github.com/hanwckf/bl-mt798x.git
   REPO_BRANCH: master
-  DEVICE_NAME: xiaomi-ax3000t
   TZ: Asia/Shanghai
 
 jobs:
@@ -81,7 +80,7 @@ jobs:
         uses: actions/upload-artifact@main
         if: steps.compile.outputs.status == 'success' && !cancelled()
         with:
-          name: u-boot_bin_${{ env.DEVICE_NAME }}${{ env.FILE_DATE }}
+          name: u-boot_bin_${{ matrix.board }}${{ env.FILE_DATE }}
           path: u-boot/output
 
       - name: Generate release tag
