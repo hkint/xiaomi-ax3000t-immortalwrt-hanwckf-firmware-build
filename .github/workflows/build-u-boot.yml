@@ -26,20 +26,20 @@ jobs:
 
     steps:
 
-      - name: Free disk space (Ubuntu)
-        uses: jlumbroso/free-disk-space@main
-        with:
-          # this might remove tools that are actually needed,
-          # if set to "true" but frees about 6 GB
-          tool-cache: false
+      # - name: Free disk space (Ubuntu)
+      #   uses: jlumbroso/free-disk-space@main
+      #   with:
+      #     # this might remove tools that are actually needed,
+      #     # if set to "true" but frees about 6 GB
+      #     tool-cache: false
           
-          # all of these default to true, but feel free to set to
-          # "false" if necessary for your workflow
-          android: true
-          dotnet: true
-          haskell: true
-          large-packages: true
-          swap-storage: false
+      #     # all of these default to true, but feel free to set to
+      #     # "false" if necessary for your workflow
+      #     android: true
+      #     dotnet: true
+      #     haskell: true
+      #     large-packages: true
+      #     swap-storage: false
 
       - name: Checkout
         uses: actions/checkout@main
@@ -48,7 +48,7 @@ jobs:
         env:
           DEBIAN_FRONTEND: noninteractive
         run: |
-
+          sudo apt-get update
           sudo -E apt-get -qq install gcc-aarch64-linux-gnu build-essential flex bison libssl-dev device-tree-compiler
 
           sudo -E apt-get -qq autoremove --purge
@@ -103,19 +103,19 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         
-      # - name: Delete workflow runs
-      #   uses: Mattraks/delete-workflow-runs@v2
-      #   with:
-      #     token: ${{ github.token }}
-      #     repository: ${{ github.repository }}
-      #     retain_days: 7
-      #     keep_minimum_runs: 3
+      - name: Delete workflow runs
+        uses: Mattraks/delete-workflow-runs@v2
+        with:
+          token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          retain_days: 7
+          keep_minimum_runs: 3
 
-      # - name: Remove old Releases
-      #   uses: dev-drprasad/delete-older-releases@v0.3.4
-      #   if: steps.release.outputs.status == 'success' && !cancelled()
-      #   with:
-      #     keep_latest: 3
-      #     delete_tags: true
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Remove old Releases
+        uses: dev-drprasad/delete-older-releases@v0.3.4
+        if: steps.release.outputs.status == 'success' && !cancelled()
+        with:
+          keep_latest: 3
+          delete_tags: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
