@@ -1,8 +1,8 @@
 name: Build U-Boot
 
 on:
-  schedule:  
-    - cron: "0 2 15 * *"
+  # schedule:  
+  #   - cron: "0 2 15 * *"
 
   workflow_dispatch:
 
